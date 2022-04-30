@@ -307,25 +307,4 @@ plt.ylabel("f Optimal Solution")
 plt.grid()
 plt.show()
 
-#-------------------For tests---------------------
-#average = sum(table)/50
-#averageIt = sum(table1)/50
-#best = min(table)
-#worst = max(table)
-
-#file = []
-#file.append("\tRastrigin 30D")
-#for i in range(50):
-#    file.append(str(table[i])+"\t"+str(table1[i]))
-#file.append("Average Solution: "+str(average))
-#file.append("Best Solution: "+str(best))
-#file.append("Worst Solution: "+str(worst))
-#file.append("Average number of Iterations: "+str(averageIt)+"\n")
-#    
-#f = open("Prey-Predator.txt","a")
-#for line in file:
-#    f.write(line+"\n")
-#f.close()
-
-
 
