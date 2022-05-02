@@ -50,7 +50,7 @@ class Particles():
     def evaluate(self):
         self.positionFitness = 1/(1+f(self.position))
 
-    #Set particles position if it is out of boundaries, according to absorbing wall technique
+    #Set particles position, if it is out of boundaries, according to absorbing wall technique
     def fixPosition(self):
         for i in range(dimensions):
             if self.position[i] < L[i]:
