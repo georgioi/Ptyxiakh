@@ -272,7 +272,7 @@ Wmin = 0.4          #Minimum inertia rate value
 Wmax = 0.9          #Maximum inertia rate value
 dfMax = 2           #Maximum Distance Coefficients value
 dfMin = 1           #Minimum Distance Coefficients value
-it = 1500           #Maximum number of iterations
+it = 1000           #Maximum number of iterations
 
 #------------------Algorithm------------------------
 table = []
