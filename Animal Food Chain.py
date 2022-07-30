@@ -131,7 +131,7 @@ class Omnivore(Particles):
             + self.p*r[i]*(gBest[i] - self.position[i])
 
 
-#Omnivores Class. This is subclass of particles class
+#Herbivores Class. This is subclass of particles class
 
 class Herbivore(Particles):
     def __init__(self):
@@ -272,12 +272,12 @@ Wmin = 0.4          #Minimum inertia rate value
 Wmax = 0.9          #Maximum inertia rate value
 dfMax = 2           #Maximum Distance Coefficients value
 dfMin = 1           #Minimum Distance Coefficients value
-it = 1000           #Maximum number of iterations
+it = 1000            #Maximum number of iterations
 
-#------------------Algorithm------------------------
 table = []
 table1 = []
 table2 = []
+#------------------Algorithm------------------------
 for u in range(1):
     start = t.perf_counter()
     rd.seed(t.process_time())
@@ -307,8 +307,8 @@ for u in range(1):
     herbivoresBestFitness = 0                   #Herbivores swarm best fitness value
     omnivoresBestFitness = 0                    #Omnivores swarm best fitness value
 
-    bestValues = []                             #Best values of objective function for every iteration, used fot diagram
-    iterations = []                             #How many iterations the algorithm run, used fot diagram
+    bestValues = []                             #Best values of objective function for every iteration, used for diagram
+    iterations = []                             #How many iterations the algorithm run, used for diagram
 
     for i in range(it):
                 
@@ -401,7 +401,7 @@ for u in range(1):
         #Test convergence criteria
         if distance < E:
             break
-        
+
     end = t.perf_counter()
 
     table.append(f(globalBest))
@@ -419,7 +419,7 @@ Y = np.array(bestValues)
 plt.plot(X,Y)
 plt.xlabel("Iterations")
 plt.ylabel("f Optimal Solution")
-plt.title("Ackley Calm")
+plt.title("Sphere 30D Wild")
 plt.grid()
 plt.show()
     
@@ -434,15 +434,15 @@ worst = table[max_index]
 averageDur = sum(table2)/50
 
 file = []
-file.append("\tSphere 30D Wild")
+file.append("\tRastrigin 30D")
 file.append("Average Solution: "+str(average))
 file.append("Best Solution: "+str(best))
 file.append("Worst Solution: "+str(worst))
-file.append("Average number of Iterations: "+str(averageIt))
+file.append("Average Number of Iteration: "+str(averageIt))
 file.append("Maximum Iterations: "+str(it))
 file.append("Average Duration: "+str(averageDur)+"\n")
     
-f = open("2ο Σετ.txt","a")
+f = open("3rd Set.txt","a")
 for line in file:
     f.write(line+"\n")
 f.close()
