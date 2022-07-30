@@ -154,8 +154,8 @@ elif dimensions<15:         #Size of predators swarm
 else:
     D = 20
 
-F = D*ratio[0]              #Size of preys swarm according to ratio
 
+F = D*ratio[0]              #Size of preys swarm according to ratio
 S = D+F                     #Total number of particles
 
 #Set boundaries according to objective function. U upper boundary, L lower boundary
@@ -202,9 +202,8 @@ it = 500            #Maximum number of iterations
 table = []
 table1 = []
 table2 = []
-
 #------------------Algorithm------------------------
-for u in range(50):
+for u in range(1):
     start = t.perf_counter()
     rd.seed(t.process_time())
                 
@@ -246,11 +245,10 @@ for u in range(50):
     predatorsBestFitness = 0                                #Predators swarm best fitness value
     preysBestFitness = 0                                    #Preys swarm best fitness value
         
-    bestValues = []                                         #Best value of objective function for every iteration, used fot diagram
+    bestValues = []                                         #Best value of objective function for every iteration, used for diagram
     iterations = []                                         #How many iterations the algorithm run, used for diagram
     
-    for i in range(it):
-                
+    for i in range(it):                
         #Calculate Predators swarm best and Fitness value for each predator
         for j in range(D):
             predators[j].evaluate()
@@ -333,7 +331,7 @@ Y = np.array(bestValues)
 plt.plot(X,Y)
 plt.xlabel("Iterations")                                
 plt.ylabel("f Optimal Solution")
-plt.title("Easom")
+plt.title("Ackley")
 plt.grid()
 plt.show()
 
@@ -348,16 +346,15 @@ best = table[min_index]
 worst = table[max_index]
 
 file = []
-file.append("\t\tSphere 30D")
+file.append("\tRastrigin 30D")
 file.append("Average Solution: "+str(average))
 file.append("Best Solution: "+str(best))
 file.append("Worst Solution: "+str(worst))
-file.append("Average number of Iterations: "+str(averageIt))
+file.append("Average Number of Iteration: "+str(averageIt))
 file.append("Maximum Iterations: "+str(it))
 file.append("Average Duration: "+str(averageDur)+"\n")
     
-f = open("1ο Σετ.txt","a")
+f = open("3rd Set.txt","a")
 for line in file:
     f.write(line+"\n")
 f.close()
-
