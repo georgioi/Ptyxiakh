@@ -24,9 +24,9 @@ def f(x):
     return result
 
 
-#Particles Class
+#Particle Class
 
-class Particles():
+class Particle():
 
     #Constructor that initializes particle's position and velocity
     #position and velocity parameters are initital particle's position and velocity
@@ -70,9 +70,9 @@ class Particles():
             elif self.velocity[i] < -vmax[i]:
                 self.velocity[i] = -vmax[i]
 
-#Carnivores Class. This is subclass of particles class
+#Carnivore Class. This is subclass of particles class
                 
-class Carnivore(Particles):
+class Carnivore(Particle):
 
     #Constructor that calls base's class constructor.
     def __init__(self):
@@ -82,16 +82,16 @@ class Carnivore(Particles):
     def setVelocity(self,swarmBest):
         r = [rd.uniform(0,1) for i in range(dimensions)]         #Random variable used to update carnivores velocity
         for i in range(dimensions):
-            self.velocity[i] = self.velocity[i] + r[i]* (swarmBest[i] - self.position[i])
+            self.velocity[i] = r[i]* (swarmBest[i] - self.position[i])
         
-#Omnivores Class. This is subclass of particles class
+#Omnivore Class. This is subclass of particles class
             
-class Omnivore(Particles):
+class Omnivore(Particle):
     def __init__(self):
         super().__init__()
         self.c1 = 2                 #Cognitive Coefficient
         self.c2 = 2                 #Social Coefficient
-        self.c3 = 2                 #Carnivores Coefficient
+        self.c3 = 2                 #Prey Coefficient
 
     #Find the nearest particle element from predators list to self omnivore
     def EuclideanDistance(self,predators):
@@ -131,15 +131,15 @@ class Omnivore(Particles):
             + self.p*r[i]*(gBest[i] - self.position[i])
 
 
-#Herbivores Class. This is subclass of particles class
+#Herbivore Class. This is subclass of particles class
 
-class Herbivore(Particles):
+class Herbivore(Particle):
     def __init__(self):
         super().__init__()
         self.c1 = 2             #Cognitive Coefficient
         self.c2 = 2             #Social Coefficient
-        self.c3 = 2             #Omnivores Coefficient
-        self.c4 = 2             #Carnivores Coefficient
+        self.c3 = 2             #Prey Coefficient for Omnivores
+        self.c4 = 2             #Prey Coefficient for Carnivores
         
                
     #Find the nearest particle element from predators list to self herbivore
@@ -161,7 +161,7 @@ class Herbivore(Particles):
         
     #Calculate herbivore velocity according to formula. gbest parameter is herbivores swarm best position. do and dc parameters are self distance from nearset omnivore and carnivore respectively
     #Pfho and Pfhc are fear factors of herbivore to omnivore and carnivore respectively.w parameter is inertia rate
-    def setVelocity(self,gBest,dc,do,a,b,w):
+    def setVelocity(self,gBest,do,dc,a,b,w):
         r1 = [rd.uniform(0,1) for i in range(dimensions)]    
         r2 = [rd.uniform(0,1) for i in range(dimensions)]    #r1, r2, r3 and r4 are random variables 
         r3 = [rd.uniform(0,1) for i in range(dimensions)]    #used to update herbivores velocity
@@ -180,10 +180,23 @@ E = 0.00001      #Error
 
 function = input("Choose Objective Function: A (Ackley) B(Booth), R(Rastrigin), S(Sphere),E(Easom): ")
 
+#Set diagram title
+if function=='B' or function=='b':
+    plot_title = "Booth"
+elif function=='A' or function == 'a' :                                           
+    plot_title = "Ackley"
+elif function == 'S' or function == 's':
+    plot_title = "Sphere"
+elif function == 'R' or function == 'r':
+    plot_title = "Rastrigin"
+elif function == 'E' or function == 'e':
+    plot_title = "Easom"
+    
 #Set number of dimensions
 
 if function == 'R' or function == 'r' or function == 'S' or function == 's':
     dimensions = int(input("Give number of dimensions: "))
+    plot_title = plot_title +' ' +str(dimensions)+'D'
 else:                                                                                      
     dimensions = 2
 
@@ -232,6 +245,14 @@ PfhoMin = (space)/74  #Minimum distance for a herbivore to start fear an omnivor
 #Choose Enviroment (wild, average or calm)
 e = input("Choose Enviroment: Wild(W), Average(A), Calm(C): ")
 
+#Update diagram title
+if e == 'W' or e == 'w':
+    plot_title = plot_title + " Wild"
+elif e == 'A' or e == 'a':
+    plot_title = plot_title + " Average"
+elif e == 'C' or e == 'c':
+    plot_title = plot_title + " Calm"
+
 #Define herbivore-omnivore-carnivore ratio according to enviroment
 
 if e == 'W' or e == 'w':
@@ -265,148 +286,137 @@ else:
     elif e == 'W' or e == 'w':
         nc = 11
 
-nh = nc*ratio[0]            #Size of herbivores swarm according to ratio        
-no = nc*ratio[1]            #Size of omnivores swarm according to ratio
+nh = nc*ratio[0]    #Size of herbivores swarm according to ratio        
+no = nc*ratio[1]    #Size of omnivores swarm according to ratio
 
 Wmin = 0.4          #Minimum inertia rate value
 Wmax = 0.9          #Maximum inertia rate value
-dfMax = 2           #Maximum Distance Coefficients value
-dfMin = 1           #Minimum Distance Coefficients value
-it = 1000            #Maximum number of iterations
+dfMax = 4           #Maximum Distance Coefficients value
+dfMin = 2           #Minimum Distance Coefficients value
+it = 1000           #Maximum number of iterations
 
-table = []
-table1 = []
-table2 = []
 #------------------Algorithm------------------------
-for u in range(1):
-    start = t.perf_counter()
-    rd.seed(t.process_time())
+rd.seed(t.process_time())
 
-    carnivores = []                             #List of carnivore's particles
-    omnivores = []                              #List of omnivores's particles
-    herbivores = []                             #List of herbivores's particles
+carnivores = []                             #List of carnivore's particles
+omnivores = []                              #List of omnivore's particles
+herbivores = []                             #List of herbivore's particles
 
-    for i in range(nc):
-        aCarnivore = Carnivore()                #Create carnivores particles and swarm
-        carnivores.append(aCarnivore)
+for i in range(nc):
+    aCarnivore = Carnivore()                #Create carnivores particles and swarm
+    carnivores.append(aCarnivore)
                 
-    for i in range(no):
-        anOmnivore = Omnivore()
-        omnivores.append(anOmnivore)            #Create omnivores particles and swarm
+for i in range(no):
+    anOmnivore = Omnivore()
+    omnivores.append(anOmnivore)            #Create omnivores particles and swarm
                 
-    for i in range(nh):
-        aHerbivore = Herbivore()
-        herbivores.append(aHerbivore)           #Create herbivores particles and swarm
+for i in range(nh):
+    aHerbivore = Herbivore()
+    herbivores.append(aHerbivore)           #Create herbivores particles and swarm
 
-    carnivoresBest = [0]*dimensions             #Carnivores swarm best                
-    herbivoresBest = [0]*dimensions             #Herbivores swarm best
-    omnivoresBest = [0]*dimensions              #Omnivores swarm best
-    globalBest = [0]*dimensions                 #Global swarm best
+carnivoresBest = [0]*dimensions     #Carnivores swarm best                
+herbivoresBest = [0]*dimensions     #Herbivores swarm best
+omnivoresBest = [0]*dimensions      #Omnivores swarm best
+globalBest = [0]*dimensions         #Global swarm best
 
-    carnivoresBestFitness = 0                   #Carnivores swarm best fitness value
-    herbivoresBestFitness = 0                   #Herbivores swarm best fitness value
-    omnivoresBestFitness = 0                    #Omnivores swarm best fitness value
+carnivoresBestFitness = 0           #Carnivores swarm best fitness value
+herbivoresBestFitness = 0           #Herbivores swarm best fitness value
+omnivoresBestFitness = 0            #Omnivores swarm best fitness value
 
-    bestValues = []                             #Best values of objective function for every iteration, used for diagram
-    iterations = []                             #How many iterations the algorithm run, used for diagram
+bestValues = []                     #Best values of objective function for every iteration, used for diagram
+iterations = []                     #Number of iterations the algorithm ran, used for diagram
 
-    for i in range(it):
+for i in range(it):
                 
-        #Calculate Carnivores swarm best and Fitness value for each carnivore
-        for j in range(nc):
-            carnivores[j].evaluate()
-            carnivores[j].Best()
-            if j==0:
-                carnivoresBest = carnivores[j].best[:]
-                carnivoresBestFitness = carnivores[j].bestFitness
-            elif carnivores[j].bestFitness < carnivoresBestFitness:         
-                carnivoresBest = carnivores[j].best[:]
-                carnivoresBestFitness = carnivores[j].bestFitness
+    #Calculate Carnivores swarm best and Fitness value for each carnivore
+    for j in range(nc):
+        carnivores[j].evaluate()
+        carnivores[j].Best()
+        if j==0:
+            carnivoresBest = carnivores[j].best[:]
+            carnivoresBestFitness = carnivores[j].bestFitness
+        elif carnivores[j].bestFitness < carnivoresBestFitness:         
+            carnivoresBest = carnivores[j].best[:]
+            carnivoresBestFitness = carnivores[j].bestFitness
 
-        #Calculate Herbivores swarm best and Fitness value for each herbivore       
-        for j in range(nh):
-            herbivores[j].evaluate()
-            herbivores[j].Best()
-            if j==0:
-                herbivoresBest = herbivores[j].best[:]
-                herbivoresBestFitness = herbivores[j].bestFitness
-            elif herbivores[j].bestFitness < herbivoresBestFitness:         
-                herbivoresBest = herbivores[j].best[:]
-                herbivoresBestFitness = herbivores[j].bestFitness
+    #Calculate Herbivores swarm best and Fitness value for each herbivore       
+    for j in range(nh):
+        herbivores[j].evaluate()
+        herbivores[j].Best()
+        if j==0:
+            herbivoresBest = herbivores[j].best[:]
+            herbivoresBestFitness = herbivores[j].bestFitness
+        elif herbivores[j].bestFitness < herbivoresBestFitness:         
+            herbivoresBest = herbivores[j].best[:]
+            herbivoresBestFitness = herbivores[j].bestFitness
                         
-        #Calculate Omnivores swarm best and Fitness value for each omnivore
-        for j in range(no):
-            omnivores[j].evaluate()
-            omnivores[j].Best()
-            if j==0:
-                omnivoresBest = omnivores[j].best[:]
-                omnivoresBestFitness = omnivores[j].bestFitness
-            elif omnivores[j].bestFitness < omnivoresBestFitness:           
-                omnivoresBest = omnivores[j].best[:]
-                omnivoresBestFitness = omnivores[j].bestFitness
+    #Calculate Omnivores swarm best and Fitness value for each omnivore
+    for j in range(no):
+        omnivores[j].evaluate()
+        omnivores[j].Best()
+        if j==0:
+            omnivoresBest = omnivores[j].best[:]
+            omnivoresBestFitness = omnivores[j].bestFitness
+        elif omnivores[j].bestFitness < omnivoresBestFitness:           
+            omnivoresBest = omnivores[j].best[:]
+            omnivoresBestFitness = omnivores[j].bestFitness
 
-        #Calculate Global best
-        globalBest = carnivoresBest[:]
+    #Calculate Global best
+    globalBest = carnivoresBest[:]
 
-        if herbivoresBestFitness < carnivoresBestFitness:
-            globalBest = herbivoresBest[:]                                                                     
+    if herbivoresBestFitness < carnivoresBestFitness:
+        globalBest = herbivoresBest[:]                                                                     
                 
-        if omnivoresBestFitness < herbivoresBestFitness and omnivoresBestFitness < carnivoresBestFitness:
-            globalBest = omnivoresBest[:]
+    if omnivoresBestFitness < herbivoresBestFitness and omnivoresBestFitness < carnivoresBestFitness:
+        globalBest = omnivoresBest[:]
       
-        #Calculate Inertia Rate
-        w = Wmax - ((Wmax-Wmin)/it)*i
+    #Calculate Inertia Rate
+    w = Wmax - ((Wmax-Wmin)/it)*i
 
-        #Calculate distance coefficient a
-        a = 0.99**i
+    #Calculate distance coefficient a
+    a = 0.99**i
 
-        #Calculate distance coefficient b
-        b = dfMin + ((dfMax-dfMin)/it)*i
+    #Calculate distance coefficient b
+    b = dfMin + ((dfMax-dfMin)/it)*i
 
-        #Carnivores Velocity and Position update
-        for j in range(nc):
-            carnivores[j].setVelocity(carnivoresBest)                       
-            carnivores[j].fixVelocity()
-            carnivores[j].setPosition()
-            carnivores[j].fixPosition()
+    #Carnivores Velocity and Position update
+    for j in range(nc):
+        carnivores[j].setVelocity(carnivoresBest)                       
+        carnivores[j].fixVelocity()
+        carnivores[j].setPosition()
+        carnivores[j].fixPosition()
 
 
-        #Herbivores Velocity and Position update
-        for j in range(nh):
-            dc = herbivores[j].EuclideanDistance(carnivores)                
-            do = herbivores[j].EuclideanDistance(omnivores)             
-            herbivores[j].setVelocity(herbivoresBest,dc,do,a,b,w)
-            herbivores[j].fixVelocity()
-            herbivores[j].setPosition()
-            herbivores[j].fixPosition()
+    #Herbivores Velocity and Position update
+    for j in range(nh):
+        dc = herbivores[j].EuclideanDistance(carnivores)                
+        do = herbivores[j].EuclideanDistance(omnivores)             
+        herbivores[j].setVelocity(herbivoresBest,do,dc,a,b,w)
+        herbivores[j].fixVelocity()
+        herbivores[j].setPosition()
+        herbivores[j].fixPosition()
 
-        #Omnivores Velocity and Position update
-        for j in range(no):
-            temp = omnivores[:]
-            temp.pop(j)
-            do = omnivores[j].EuclideanDistance(temp)
-            dc  = omnivores[j].EuclideanDistance(carnivores)
-            omnivores[j].predatorPropability(do,dc)                         
-            omnivores[j].setVelocity(omnivoresBest, do,dc,a,b,w)
-            omnivores[j].fixVelocity()
-            omnivores[j].setPosition()
-            omnivores[j].fixPosition()
+    #Omnivores Velocity and Position update
+    for j in range(no):
+        temp = omnivores[:]
+        temp.pop(j)
+        do = omnivores[j].EuclideanDistance(temp)
+        dc  = omnivores[j].EuclideanDistance(carnivores)
+        omnivores[j].predatorPropability(do,dc)                         
+        omnivores[j].setVelocity(omnivoresBest, do,dc,a,b,w)
+        omnivores[j].fixVelocity()
+        omnivores[j].setPosition()
+        omnivores[j].fixPosition()
 
-        bestValues.append(f(globalBest))
-        iterations.append(i)
+    bestValues.append(f(globalBest))
+    iterations.append(i)
 
-        #Calculate distance between optimal known solution and current best solution      
-        distance = abs(f(globalBest)-f(optimal))
+    #Calculate distance between optimal known solution and current best solution      
+    distance = abs(f(globalBest)-f(optimal))
         
-        #Test convergence criteria
-        if distance < E:
-            break
-
-    end = t.perf_counter()
-
-    table.append(f(globalBest))
-    table1.append(i+1)
-    table2.append(end-start)
+    #Test convergence criteria
+    if distance < E:
+        break
 
 #Best position and best position value
 print("Global Best:", globalBest,"\nGlobal Best value:",f(globalBest))
@@ -419,30 +429,7 @@ Y = np.array(bestValues)
 plt.plot(X,Y)
 plt.xlabel("Iterations")
 plt.ylabel("f Optimal Solution")
-plt.title("Sphere 30D Wild")
+plt.title(plot_title)
 plt.grid()
 plt.show()
     
-#-------------------For tests---------------------
-average = sum(table)/50
-averageIt = sum(table1)/50
-dif = [abs(i - f(optimal)) for i in table]
-min_index = dif.index(min(dif))
-max_index = dif.index(max(dif))
-best = table[min_index]
-worst = table[max_index]
-averageDur = sum(table2)/50
-
-file = []
-file.append("\tRastrigin 30D")
-file.append("Average Solution: "+str(average))
-file.append("Best Solution: "+str(best))
-file.append("Worst Solution: "+str(worst))
-file.append("Average Number of Iteration: "+str(averageIt))
-file.append("Maximum Iterations: "+str(it))
-file.append("Average Duration: "+str(averageDur)+"\n")
-    
-f = open("3rd Set.txt","a")
-for line in file:
-    f.write(line+"\n")
-f.close()
