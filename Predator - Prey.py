@@ -16,7 +16,7 @@ def f(x):
         for i in range(dimensions):
             result = result + x[i]**2   #Sphere
     elif function == 'R' or function == 'r':
-        for i in range (dimensions):
+        for i in range(dimensions):
             result = result + (x[i]**2 - 10*m.cos(2*m.pi*x[i]))     #Rastrigin
         result = result + 10*dimensions
     elif function == 'E' or function == 'e':
@@ -24,9 +24,9 @@ def f(x):
     return result
 
 
-#Particles Class
+#Particle Class
 
-class Particles():
+class Particle():
 
     #Constructor that initializes particle's position and velocity
     #position and velocity parameters are initital particle's position and velocity
@@ -72,7 +72,7 @@ class Particles():
 
 #Predator Class. This is subclass of particles class
 
-class Predator(Particles):
+class Predator(Particle):
 
     #Constructor that calls base's class constructor.
     def __init__(self,position,velocity):
@@ -82,19 +82,19 @@ class Predator(Particles):
     def setVelocity(self,preyBest):
         r = [rd.uniform(0,vmax[i]) for i in range(dimensions)]           #Random variable used to update predators velocity
         for i in range(dimensions):
-            self.velocity[i] = self.velocity[i] + r[i]* (preyBest[i] - self.position[i])  
+            self.velocity[i] = r[i]* (preyBest[i] - self.position[i])  
         
 
 #Prey Class. This is subclass of particles class
     
-class Prey(Particles):
+class Prey(Particle):
 
     #Constructor that calls base's class constructor and initialize variables used in the prey's velocity formula
     def __init__(self,position,velocity):
         super().__init__(position,velocity)
         self.c1 = 2                 #Cognitive Coefficient
         self.c2 = 2                 #Social Coefficient
-        self.c3 = 2.5               #Predator Coefficient
+        self.c3 = 2.5               #Prey Coefficient
        
     #Find the nearest particle element from predators list to self prey.
     def EuclideanDistance(self,predators):
@@ -137,10 +137,24 @@ E = 0.00001       #Error
 
 function = input("Choose Objective Function: A (Ackley) B(Booth), R(Rastrigin), S(Sphere), E(Easom): ")
 
+#Set diagram title
+if function=='B' or function=='b':
+    plot_title = "Booth"
+elif function=='A' or function == 'a' :                                           
+    plot_title = "Ackley"
+elif function == 'S' or function == 's':
+    plot_title = "Sphere"
+elif function == 'R' or function == 'r':
+    plot_title = "Rastrigin"
+elif function == 'E' or function == 'e':
+    plot_title = "Easom"
+
+
 #Set number of dimensions
 
 if function == 'R' or function == 'r' or function == 'S' or function == 's':
     dimensions = int(input("Give number of dimensions: "))
+    plot_title = plot_title +' ' +str(dimensions)+'D'
 else:                                                                                      
     dimensions = 2
 
@@ -193,132 +207,119 @@ for i in range(dimensions):
 
 Wmin = 0.4          #Minimum inertia rate value
 Wmax = 0.9          #Maximum inertia rate value
-pfMax = 0.7         #Maximum Fear Propability
-pfMin = 0.3         #Minimum Fear Propability
 dfMax = 4           #Maximum Distance Coefficients value
 dfMin = 2           #Minimum Distance Coefficients value
 it = 500            #Maximum number of iterations
 
-table = []
-table1 = []
-table2 = []
 #------------------Algorithm------------------------
-for u in range(1):
-    start = t.perf_counter()
-    rd.seed(t.process_time())
+rd.seed(t.process_time())
                 
-    predators = []              #List of predator's particles
-    preys = []                  #List of prey's particles
+predators = []              #List of predator's particles
+preys = []                  #List of prey's particles
 
-    #Set initial particles position
-    positions = []
-    for i in range(S):
-        temp = [rd.uniform(L[i],U[i]) for i in range(dimensions)]
-        positions.append(temp)
+#Set initial particles position
+positions = []
+for i in range(S):
+    temp = [rd.uniform(L[i],U[i]) for i in range(dimensions)]
+    positions.append(temp)
                 
-    #Set initial particles velocity
-    velocities = []
-    for i in range(S):
-        temp = [rd.uniform(-vmax[i],vmax[i]) for i in range(dimensions)]
-        velocities.append(temp)
+#Set initial particles velocity
+velocities = []
+for i in range(S):
+    temp = [rd.uniform(-vmax[i],vmax[i]) for i in range(dimensions)]
+    velocities.append(temp)
 
-    #Divide particles into predators and preys swarms
-    temp = 0
-    temp1 = 0
+#Divide particles into predators and preys swarms
+temp = 0
+temp1 = 0
 
-    for i in range(S):
-        a = rd.randint(0,1)
-        if (a == 0 and temp !=D) or temp1==F:
-            aPredator = Predator(positions[i],velocities[i])
-            predators.append(aPredator)                             #Create Predators Particles and swarm
-            temp +=1
+for i in range(S):
+    a = rd.randint(0,1)
+    if (a == 0 and temp !=D) or temp1==F:
+        aPredator = Predator(positions[i],velocities[i])
+        predators.append(aPredator)                             #Create Predators Particles and swarm
+        temp +=1
 
-        elif (a == 1 and temp1!=F) or temp==D:
-            aPrey = Prey(positions[i],velocities[i])
-            preys.append(aPrey)                                     #Create Preys Particles and swarm
-            temp1 +=1
+    elif (a == 1 and temp1!=F) or temp==D:
+        aPrey = Prey(positions[i],velocities[i])
+        preys.append(aPrey)                                     #Create Preys Particles and swarm
+        temp1 +=1
 
-    predatorsBest = [0]*dimensions                          #Predators swarm best
-    preysBest = [0]*dimensions                              #Preys swarm best
-    globalBest = [0]*dimensions                             #Global swarm best
+predatorsBest = [0]*dimensions      #Predators swarm best
+preysBest = [0]*dimensions          #Preys swarm best
+globalBest = [0]*dimensions         #Global swarm best
 
-    predatorsBestFitness = 0                                #Predators swarm best fitness value
-    preysBestFitness = 0                                    #Preys swarm best fitness value
+predatorsBestFitness = 0            #Predators swarm best fitness value
+preysBestFitness = 0                #Preys swarm best fitness value
         
-    bestValues = []                                         #Best value of objective function for every iteration, used for diagram
-    iterations = []                                         #How many iterations the algorithm run, used for diagram
+bestValues = []                     #Best value of objective function for every iteration, used for diagram
+iterations = []                     #Number ofiterations the algorithm ran, used for diagram
     
-    for i in range(it):                
-        #Calculate Predators swarm best and Fitness value for each predator
-        for j in range(D):
-            predators[j].evaluate()
-            predators[j].Best()
-            if j == 0:
-                predatorsBest = predators[j].best[:]
-                predatorsBestFitness = predators[j].bestFitness
-            elif predators[j].bestFitness < predatorsBestFitness:   
-                predatorsBest = predators[j].best[:]
-                predatorsBestFitness = predators[j].bestFitness
+for i in range(it):                
+    #Calculate Predators swarm best and each predator's Fitness value
+    for j in range(D):
+        predators[j].evaluate()
+        predators[j].Best()
+        if j == 0:
+            predatorsBest = predators[j].best[:]
+            predatorsBestFitness = predators[j].bestFitness
+        elif predators[j].bestFitness < predatorsBestFitness:   
+            predatorsBest = predators[j].best[:]
+            predatorsBestFitness = predators[j].bestFitness
 
-        #Calculate Preys swarm best and Fitness value for each prey
-        for j in range(F):
-            preys[j].evaluate()
-            preys[j].Best()
-            if j == 0:
-                preysBest = preys[j].best[:]
-                preysBestFitness = preys[j].bestFitness
-            elif preys[j].bestFitness < preysBestFitness:
-                preysBest = preys[j].best[:]
-                preysBestFitness = preys[j].bestFitness
+    #Calculate Preys swarm best and each prey;s Fitness value
+    for j in range(F):
+        preys[j].evaluate()
+        preys[j].Best()
+        if j == 0:
+            preysBest = preys[j].best[:]
+            preysBestFitness = preys[j].bestFitness
+        elif preys[j].bestFitness < preysBestFitness:
+            preysBest = preys[j].best[:]
+            preysBestFitness = preys[j].bestFitness
 
-        #Calculate Global best
-        globalBest = predatorsBest[:]
-        if preysBestFitness < predatorsBestFitness:                 
-            globalBest = preysBest[:]
+    #Calculate Global best
+    globalBest = predatorsBest[:]
+    if preysBestFitness < predatorsBestFitness:                 
+        globalBest = preysBest[:]
 
-        #Calculate Inertia Rate
-        w = Wmax - ((Wmax-Wmin)/it)*i
+    #Calculate Inertia Rate
+    w = Wmax - ((Wmax-Wmin)/it)*i
 
-        #Calclulate fear propability
-        pf = 0.99**i
+    #Calclulate fear propability
+    pf = 0.99**i
 
-        #Calculate distance coefficient a
-        a = 0.99**i
+    #Calculate distance coefficient a
+    a = 0.99**i
 
-        #Calculate distance coefficient b
-        b = dfMin + ((dfMax-dfMin)/it)*i
+    #Calculate distance coefficient b
+    b = dfMin + ((dfMax-dfMin)/it)*i
                 
-        #Predators Velocity and Position Update    
-        for j in range(D):
-            predators[j].setVelocity(preysBest)                     
-            predators[j].fixVelocity()
-            predators[j].setPosition()
-            predators[j].fixPosition()
+    #Predators Velocity and Position Update    
+    for j in range(D):
+        predators[j].setVelocity(preysBest)                     
+        predators[j].fixVelocity()
+        predators[j].setPosition()
+        predators[j].fixPosition()
 
-        #Preys Velocity and Position Update
-        for j in range(F):
-            d = preys[j].EuclideanDistance(predators)              
-            preys[j].setVelocity(preysBest,d,a,b,w,pf)
-            preys[j].fixVelocity()
-            preys[j].setPosition()
-            preys[j].fixPosition()
+    #Preys Velocity and Position Update
+    for j in range(F):
+        d = preys[j].EuclideanDistance(predators)              
+        preys[j].setVelocity(preysBest,d,a,b,w,pf)
+        preys[j].fixVelocity()
+        preys[j].setPosition()
+        preys[j].fixPosition()
 
-        bestValues.append(f(globalBest))                            
-        iterations.append(i)
-        
-        #Calculate distance between optimal known solution and current best solution
+    bestValues.append(f(globalBest))                            
+    iterations.append(i)
+            
+    #Calculate distance between optimal known solution and current best solution
 
-        distance = abs(f(globalBest) - f(optimal))                  
+    distance = abs(f(globalBest) - f(optimal))                  
 
-        #Test convergence criteria
-        if distance < E:
-            break
-
-    end = t.perf_counter()
-
-    table.append(f(globalBest))
-    table1.append(i+1)
-    table2.append(end-start)
+    #Test convergence criteria
+    if distance < E:
+        break
     
 #Best position and best position value
 print("Global Best:", globalBest,"\nGlobal Best value:",f(globalBest))
@@ -331,30 +332,6 @@ Y = np.array(bestValues)
 plt.plot(X,Y)
 plt.xlabel("Iterations")                                
 plt.ylabel("f Optimal Solution")
-plt.title("Ackley")
+plt.title(plot_title)
 plt.grid()
 plt.show()
-
-#-------------------For tests---------------------
-average = sum(table)/50
-averageIt = sum(table1)/50
-averageDur = sum(table2)/50
-dif = [abs(i - f(optimal)) for i in table]
-min_index = dif.index(min(dif))
-max_index = dif.index(max(dif))
-best = table[min_index]
-worst = table[max_index]
-
-file = []
-file.append("\tRastrigin 30D")
-file.append("Average Solution: "+str(average))
-file.append("Best Solution: "+str(best))
-file.append("Worst Solution: "+str(worst))
-file.append("Average Number of Iteration: "+str(averageIt))
-file.append("Maximum Iterations: "+str(it))
-file.append("Average Duration: "+str(averageDur)+"\n")
-    
-f = open("3rd Set.txt","a")
-for line in file:
-    f.write(line+"\n")
-f.close()
