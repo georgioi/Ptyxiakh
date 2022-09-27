@@ -256,7 +256,7 @@ bestValues = []                     #Best value of objective function for every 
 iterations = []                     #Number ofiterations the algorithm ran, used for diagram
     
 for i in range(it):                
-    #Calculate Predators swarm best and each predator's Fitness value
+    #Calculate Predators swarm best and and Fitness value for each predator
     for j in range(D):
         predators[j].evaluate()
         predators[j].Best()
@@ -267,7 +267,7 @@ for i in range(it):
             predatorsBest = predators[j].best[:]
             predatorsBestFitness = predators[j].bestFitness
 
-    #Calculate Preys swarm best and each prey;s Fitness value
+    #Calculate Preys swarm best and Fitness value for each prey
     for j in range(F):
         preys[j].evaluate()
         preys[j].Best()
